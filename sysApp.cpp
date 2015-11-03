@@ -70,7 +70,7 @@ namespace sysApp {
 		String sJSONSetting = jsonSetting->ToString();
 		sysStr::WideCharToUTF8(sJSONSetting.c_str(), sJSONSetting.Length(), buffer, len);
 
-        sysFile::WriteToFile(sFile.c_str(), buffer, len);
+		sysFile::WriteToFile(sFile.c_str(), buffer, len);
 
 		delete[]buffer;
 		delete jsonSetting;
@@ -133,6 +133,21 @@ namespace sysApp {
 		delete jsonSetting;
 
 		return result;
+	}
+
+	std::unique_ptr<TJSONObject> GetAppSettings() {
+		static std::wstring sFile = GetApplicationSettingPath();
+
+		if (!sysFile::IsFileExist(sFile.c_str())){
+			return std::unique_ptr<TJSONObject>(NULL);
+		}
+
+		TJSONObject *jsonSetting = sysJSON::ParseJSONFile(sFile.c_str());
+		if (!jsonSetting){
+			return std::unique_ptr<TJSONObject>(NULL);
+		}
+
+		return std::unique_ptr<TJSONObject>(jsonSetting);
 	}
 
 	TJSONValue * GetSetting(const wchar_t *settingName){
@@ -306,6 +321,46 @@ namespace sysApp {
 		}
 	}
 
+	void SaveControlState(TControl *control, String prefix) {
+		String parameter;
+		if (prefix == NULL) {
+			parameter = control->Name;
+		} else {
+			parameter = prefix + control->Name;
+		}
+
+		std::unique_ptr<TJSONObject> jsonState = sysControlState::GetControlState(control);
+		if (jsonState) {
+			sysApp::SetSetting(parameter.c_str(), jsonState.get());
+		}
+	}
+
+	void SaveControlsState(const std::list<TControl *> &controls, String prefix) {
+		std::unique_ptr<TJSONObject> jsonAppSettings = GetAppSettings();
+		if (!jsonAppSettings) {
+        	return;
+		}
+
+        //TODO
+	}
+
+	void RestoreControlState(TControl *control, String prefix) {
+		std::unique_ptr<TJSONObject> jsonAppSettings = GetAppSettings();
+		if (jsonAppSettings) {
+			sysControlState::RestoreControlState(jsonAppSettings, control, prefix);
+		}
+	}
+
+	void RestoreControlsState(const std::list<TControl *> &controls, String prefix) {
+		std::unique_ptr<TJSONObject> jsonAppSettings = GetAppSettings();
+		if (!jsonAppSettings) {
+        	return;
+		}
+
+		for (std::list<TControl *>::const_iterator i = controls.begin(), iEnd = controls.end(); i != iEnd; ++i) {
+			sysControlState::RestoreControlState(jsonAppSettings, *i, prefix);
+		}
+	}
 };
 
 

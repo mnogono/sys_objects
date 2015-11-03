@@ -3,6 +3,7 @@
 #ifndef sysAppH
 #define sysAppH
 
+#include <cstddef>
 //define SYSAPP_HIDDEN_SETTINGS in startup project for make setting file as hidden. probelm with Hidden files, cant be modify
 
 // ---------------------------------------------------------------------------
@@ -66,6 +67,16 @@ namespace sysApp {
 
 	//restore from application setting file, the form parameters and apply it to form
 	void RestoreFormSettings(TForm *form);
+
+	//save into application setting file, the control state
+	//prefix it is optional parameters, by defaut it control name
+	void SaveControlState(TControl *control, String prefix = NULL);
+
+	void SaveControlsState(const std::list<TControl *> &controls, String prefix = NULL);
+
+	void RestoreControlState(TControl *contro, String prefix = NULL);
+
+	void RestoreControlsState(const std::list<TControl *> &controls, String prefix = NULL);
 }
 
 #endif
