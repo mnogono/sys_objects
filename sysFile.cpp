@@ -299,35 +299,6 @@ namespace sysFile {
 	}
 
 	char * BinaryToString(const wchar_t *file) {
-		/*
-		std::ifstream in(file, std::ios_base::binary);
-
-		long iFileSize = GetFileSize(file);
-        long iBufferSize = iFileSize * 2 + 1;
-		char *cBuffer = new char[iBufferSize];
-        memset(cBuffer, 0, iBufferSize * sizeof(char));
-
-		try {
-			unsigned char byte;
-			char hexBuffer[] = {0,0};
-            long iByteReaded = 0;
-			while (in.good()){
-				in.read((char *)&byte, sizeof(unsigned char));
-                if (!in.good()) {
-					break;
-                }
-				sprintf(hexBuffer, "%.2X", byte);
-				cBuffer[iByteReaded * 2] = hexBuffer[0];
-				cBuffer[iByteReaded * 2 + 1] = hexBuffer[1];
-				++iByteReaded;
-			}
-
-		} __finally {
-			in.close();
-		}
-
-		return cBuffer;
-		*/
 		long iFileSize = GetFileSize(file);
 		long iBufferSize = iFileSize * 2 + 1;
 		char *cBuffer = new char[iBufferSize];
@@ -379,7 +350,7 @@ namespace sysFile {
 		return cBuffer;
 	}
 
-	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file){
+	SYSTEMTIME GetFileLastModifyDateTimeUTC(const wchar_t *file){
 		HANDLE hFile = CreateFileW(
 			file,
 			GENERIC_READ,
@@ -391,24 +362,20 @@ namespace sysFile {
 
 		SYSTEMTIME stUTC;
 
-		try {
+		FILETIME lpCreationTime;
+		FILETIME lpLastAcessTime;
+		FILETIME lpLastWriteTime;
 
-			FILETIME lpCreationTime;
-			FILETIME lpLastAcessTime;
-			FILETIME lpLastWriteTime;
+		FILETIME ftCreate, ftAccess, ftWrite;
 
-			FILETIME ftCreate, ftAccess, ftWrite;
-
-			if (!GetFileTime(hFile, &lpCreationTime, &lpLastAcessTime, &lpLastWriteTime)){
-				return FALSE;
-			}
-
+		if (GetFileTime(hFile, &lpCreationTime, &lpLastAcessTime, &lpLastWriteTime)){
 			FileTimeToSystemTime(&lpLastWriteTime, &stUTC);
-		} __finally {
-			CloseHandle(hFile);
 		}
 
-        return sysTime::SystemTimeToDateTime(&stUTC);
+		CloseHandle(hFile);
+
+		//return sysTime::SystemTimeToDateTime(&stUTC);
+        return stUTC;
 	}
 
 

@@ -107,7 +107,7 @@ namespace sysFile {
     */
     void FileToByteBuffer(const wchar_t *file, unsigned char *buffer);
 
-	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file);
+	SYSTEMTIME GetFileLastModifyDateTimeUTC(const wchar_t *file);
 
 	/*
 		return specify executable module path

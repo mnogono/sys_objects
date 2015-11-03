@@ -60,6 +60,8 @@ bool OpenFile(const String &sOfficeInstalledPath, const wchar_t *file) {
 	bool res = sysProcess::ExecuteCmd(NULL, parameters->ToString().c_str());
 
 	delete parameters;
+
+    return res;
 }
 
 }
