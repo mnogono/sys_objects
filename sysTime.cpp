@@ -1,13 +1,13 @@
-//---------------------------------------------------------------------------
-
 #include "pch.h"
-#pragma hdrstop
-
-//---------------------------------------------------------------------------
 
 #ifdef __BORLANDC__
-	#pragma package(smart_init)
+
+#pragma hdrstop
+
+#pragma package(smart_init)
+
 #endif
+
 
 namespace sysTime {
 	const double DAY2MSEC = 86400000.0;
@@ -68,6 +68,7 @@ namespace sysTime {
 		dt.DecodeDate(&year, &mount, &day);
 		return year * 10000 + mount * 100 + day;
 	}
+#endif
 
 	char * GetDate(const int &year, const int &mount, const int &day){
 		char *date = new char[9];
@@ -75,11 +76,13 @@ namespace sysTime {
 		return date;
 	}
 
+#ifdef __BORLANDC__
 	char * GetDate(TDateTime *dt){
 		unsigned short year, mount, day;
 		dt->DecodeDate(&year, &mount, &day);
 		return GetDate(year, mount, day);
 	}
+#endif
 
 	wchar_t * GetDateW(SYSTEMTIME &st, wchar_t *wFormat) {
 		wchar_t *wBuffer = new wchar_t[255];
@@ -101,11 +104,11 @@ namespace sysTime {
 		swprintf(wBuffer, wFormat, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
 		return wBuffer;
 	}
-
+#ifdef __BORLANDC__
     long GetSecondsLocalTime(TDateTime *dt){
         return (dt->Val - 25569.0) * DAY2SEC;
     }
-
+#endif
 	/*
 	Local time bias in seconds
 	*/
@@ -115,12 +118,21 @@ namespace sysTime {
 		return (timeZoneInformation.Bias/* + timeZoneInformation.DaylightBias*/) * 60;
 	}
 
+#ifdef __BORLANDC__
 	char * GetCurrentDateGMT(){
 		static double fLocalTimeBiasInDays = GetLocalTimeBias() * SEC2DAY; // / double(SEC_IN_DAY);
         TDateTime dtGMT = Now() + fLocalTimeBiasInDays;
         return GetDate(&dtGMT);
     }
+#else
+	char * GetCurrentDateGMT(){
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		return GetDate(st.wYear, st.wMonth, st.wDay);
+	}
+#endif
 
+#ifdef __BORLANDC__
 	void GetCurrentLocalDateTimeW(wchar_t *wBuffer, String &sFormat){
 		String _sFormat = sysBaseTypes::EmptyTo(sFormat, "yyyy-mm-dd hh:mm:nn");
         TDateTime dt = Now();
@@ -200,7 +212,7 @@ namespace sysTime {
         return dtGMT - fLocalTimeBiasInDays;
     }
 
-	#ifdef __BORLANDC__
+#ifdef __BORLANDC__
 
     double GetLocalTime(TDateTime *dt){
         WORD hours, minutes, seconds, milliseconds;
@@ -208,7 +220,7 @@ namespace sysTime {
         return GetSecondsLocalTime(dt) + milliseconds * MSEC2SEC;
     }
 
-	#endif
+#endif
 
     /*
     convert date time local time to gmt
@@ -236,7 +248,7 @@ namespace sysTime {
 		return
 	}
 	*/
-
+#ifdef __BORLANDC__
 	__int64 ConvertToUnixTime(const TDateTime &dt){
 		return (dt.Val - 25569.0) * 86400;
 	}
@@ -245,4 +257,6 @@ namespace sysTime {
 	__int64 ConvertToUnixTimeMilliseconds(const TDateTime &dt){
 		return ConvertToUnixTime(dt) * (__int64)SEC2MSEC + (__int64)MilliSecondOf(dt);
 	}
+#endif
+
 }

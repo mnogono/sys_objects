@@ -1,17 +1,16 @@
-//---------------------------------------------------------------------------
-
 #include "pch.h"
-#pragma hdrstop
-
-#include "sysStr.h"
-
-//---------------------------------------------------------------------------
-
-#pragma package(smart_init)
 
 #ifdef __BORLANDC__
 
+#pragma hdrstop
+
+#pragma package(smart_init)
+
+#endif
+
 namespace sysJSON {
+	#ifdef __BORLANDC__
+
 	TJSONPair * GetPair(const TJSONObject *json, const wchar_t *key) {
 		std::vector<std::wstring> keys;
 		sysStr::Split(key, L".", keys);
@@ -155,6 +154,5 @@ class TMyJSONString : public TJSONString {
 		if (!jsonValue) return true;
 		return jsonValue->Value().IsEmpty();
 	}
+	#endif
 };
-
-#endif

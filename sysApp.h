@@ -8,7 +8,26 @@
 
 // ---------------------------------------------------------------------------
 
+// Check windows
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
 namespace sysApp {
+#ifdef __BORLANDC__
 	//need to define this variable into the project, for instance as empty string
 	extern std::wstring defautlApplicationSettingPath;
 
@@ -77,6 +96,7 @@ namespace sysApp {
 	void RestoreControlState(TControl *contro, String prefix = NULL);
 
 	void RestoreControlsState(const std::list<TControl *> &controls, String prefix = NULL);
+#endif
 }
 
 #endif

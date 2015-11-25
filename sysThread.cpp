@@ -1,13 +1,16 @@
-//---------------------------------------------------------------------------
-
 #include "pch.h"
+
+#ifdef  __BORLANDC__
+
 #pragma hdrstop
 
-#include "sysThread.h"
+#pragma package(smart_init)
 
-//---------------------------------------------------------------------------
+#endif
 
 namespace sysThread {
+#ifdef __BORLANDC__
+
 	TThreadTask::~TThreadTask() {
 	}
 
@@ -124,8 +127,8 @@ namespace sysThread {
 			}
 		}
 	}
-};
 
-#pragma package(smart_init)
+#endif
+};
 
 

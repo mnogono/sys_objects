@@ -5,7 +5,7 @@
 //---------------------------------------------------------------------------
 
 namespace sysJSON {
-
+#ifdef __BORLANDC__
 	/* return NULL if can't find specify key */
 	TJSONPair * GetPair(const TJSONObject *json, const wchar_t *key);
 
@@ -46,6 +46,7 @@ namespace sysJSON {
 	Check is jsonValue == null or ""
 	*/
 	bool IsEmpty(TJSONValue *jsonValue);
+#endif
 };
 
 #endif

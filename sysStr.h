@@ -198,6 +198,13 @@ namespace sysStr {
 	replace key to value in templateString
 	*/
 	void Replace(std::wstring &str, const wchar_t *key, const wchar_t *value);
+
+	void Replace(std::string &str, const char *key, const char *value);
+
+	/*
+	replace all key in str into value
+	*/
+	void ReplaceAll(std::string &str, const char *key, const char *value);
 }
 
 #endif

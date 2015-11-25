@@ -1,11 +1,12 @@
-//---------------------------------------------------------------------------
-
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
 
-//---------------------------------------------------------------------------
-
 #pragma package(smart_init)
+
+#endif
 
 namespace sysMath {
 
@@ -75,7 +76,7 @@ namespace sysMath {
 		for (i = 0; i < gaussWidth; ++i) {
 			sum = 0.0;
 			for (x = -gaussWidth; x <= gaussWidth; ++x) {
-				index = abs(i + x);
+				index = abs((int)(i + x));
 				sum += dataOriginal[index] * gaussKernal[x + gaussWidth];
 			}
 			data[i] = sum;
@@ -95,7 +96,7 @@ namespace sysMath {
 				sum += dataOriginal[i + x] * gaussKernal[x + gaussWidth];
 			}
 			for (x = 1; x < gaussWidth; ++x) {
-				index = size - abs(size - i - x) - 1;
+				index = size - abs((int)(size - i - x)) - 1;
 				sum += dataOriginal[index] * gaussKernal[x + gaussWidth];
 			}
 			data[i] = sum;

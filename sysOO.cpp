@@ -1,13 +1,15 @@
-//---------------------------------------------------------------------------
-
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
 
 #pragma package(smart_init)
 
-#ifdef __BORLANDC__
+#endif
 
 namespace sysOO {
+#ifdef __BORLANDC__
 
 //---------------------------------------------------------------------------
 bool IsOpenOfficeInstalled(String openOfficeVersion, String &path) {
@@ -63,11 +65,5 @@ bool OpenFile(const String &sOfficeInstalledPath, const wchar_t *file) {
 
     return res;
 }
-
-}
-
 #endif
-
-
-
-
+}

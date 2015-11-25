@@ -1,13 +1,15 @@
-//---------------------------------------------------------------------------
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
 
-#include "sysControlState.h"
-//---------------------------------------------------------------------------
 #pragma package(smart_init)
 
-namespace sysControlState {
+#endif
 
+namespace sysControlState {
+#ifdef __BORLANDC__
 	std::unique_ptr<TJSONObject> GetLabelState(TLabel *label) {
 		std::unique_ptr<TJSONObject> jsonState(new TJSONObject);
 		jsonState->AddPair("Caption", label->Caption);
@@ -110,4 +112,5 @@ namespace sysControlState {
 
 		}
 	}
+#endif
 };

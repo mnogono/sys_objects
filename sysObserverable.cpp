@@ -1,9 +1,13 @@
-//---------------------------------------------------------------------------
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
-#include "sysObserverable.h"
-//---------------------------------------------------------------------------
+
 #pragma package(smart_init)
+
+#endif
+
 namespace sysObserverable {
 	TObserverable::~TObserverable() {
 		observers.clear();

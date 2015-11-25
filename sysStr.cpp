@@ -1,11 +1,11 @@
-// ---------------------------------------------------------------------------
-
 #include "pch.h"
+
+#ifdef  __BORLANDC__
+
 #pragma hdrstop
 
-// ---------------------------------------------------------------------------
-#ifdef __BORLANDC__
-	#pragma package(smart_init)
+#pragma package(smart_init)
+
 #endif
 
 namespace sysStr {
@@ -408,7 +408,7 @@ namespace sysStr {
 		return true;
     }
 
-	bool WToMB(const wchar_t *wBuffer, char *&sBuffer){
+	bool WToMB(const wchar_t *wBuffer, char *&sBuffer) {
 		size_t size = wcstombs(0, wBuffer, 0);
 		if (size == size_t(-1)){
 			return false;
@@ -730,5 +730,25 @@ namespace sysStr {
 		}
 
 		str.replace(index, wcslen(key), value);
+	}
+
+	void Replace(std::string &str, const char *key, const char *value) {
+		size_t index = str.find(key, 0);
+		if (index == std::string::npos) {
+			return;
+		}
+
+		str.replace(index, strlen(key), value);
+	}
+
+	void ReplaceAll(std::string &str, const char *key, const char *value) {
+		while (true) {
+			size_t index = str.find(key, 0);
+			if (index == std::string::npos) {
+				return;
+			}
+
+			str.replace(index, strlen(key), value);
+		}
 	}
 }

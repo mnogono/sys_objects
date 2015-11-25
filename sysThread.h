@@ -5,7 +5,7 @@
 //---------------------------------------------------------------------------
 
 namespace sysThread {
-
+#ifdef __BORLANDC__
 	class TThreadPool;
 
 	//Base class for thread tasks
@@ -133,7 +133,7 @@ namespace sysThread {
 			return size;
 		}
 	};
-
+#endif
 }
 
 #endif

@@ -16,7 +16,6 @@
 #ifndef _crc_h
 #define _crc_h
 
-
 #define FALSE	0
 #define TRUE	!FALSE
 

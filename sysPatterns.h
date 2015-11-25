@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 
 namespace sysPatterns {
+#ifdef __BORLANDC__
 	// Observer - Observerable pattern
 	/*
 	class TObserver : public sysObserver::IObserver {
@@ -180,6 +181,7 @@ namespace sysPatterns {
 			}
 			*/
 	};
+#endif
 }
 
 #endif

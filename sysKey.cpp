@@ -1,14 +1,21 @@
-//---------------------------------------------------------------------------
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
-//---------------------------------------------------------------------------
+
 #pragma package(smart_init)
+
+#endif
 
 namespace sysKey {
 
-bool IsCtrlPressed(){
+#ifdef __BORLANDC__
+
+bool IsCtrlPressed() {
 	return (GetKeyState(VK_CONTROL) >> 7) != 0;
 }
 
+#endif
 }
 

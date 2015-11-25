@@ -24,6 +24,6 @@ namespace sysReg {
 
 	 return true if success
 	 */
-	bool RegQueryStringValue(HKEY hKey, const wchar_t *wcsSubKey, const wchar_t *wcsParamName, wchar_t *&wcsValue/*, int &valueSize*/);
+	bool RegQueryStringValue(HKEY hKey, const wchar_t *wcsSubKey, const wchar_t *wcsParamName, wchar_t *&wcsValue);
 }
 #endif

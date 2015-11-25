@@ -1,12 +1,15 @@
-// ---------------------------------------------------------------------------
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
-// ---------------------------------------------------------------------------
 
 #pragma package(smart_init)
 
-namespace sysApp {
+#endif
 
+namespace sysApp {
+#ifdef __BORLANDC__
 	std::wstring defautlApplicationSettingPath = L"";
 
 	std::wstring GetApplicationSettingPath() {
@@ -361,6 +364,7 @@ namespace sysApp {
 			sysControlState::RestoreControlState(jsonAppSettings, *i, prefix);
 		}
 	}
+#endif
 };
 
 

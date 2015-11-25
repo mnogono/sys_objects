@@ -1,25 +1,28 @@
-//---------------------------------------------------------------------------
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
-//---------------------------------------------------------------------------
 
 #pragma package(smart_init)
+
+#endif
 
 namespace sysFile {
 
 	VS_FIXEDFILEINFO * GetExeVersionRoot(wchar_t *fileName){
-		DWORD infoSize = GetFileVersionInfoSizeW(fileName, 0);
+		DWORD infoSize = GetFileVersionInfoSize(fileName, 0);
 		if (!infoSize) return NULL;
 
 		char * fileInfo = new char[infoSize];
-		if (!GetFileVersionInfoW(fileName, 0, infoSize, fileInfo)){
+		if (!GetFileVersionInfo(fileName, 0, infoSize, fileInfo)){
 			delete []fileInfo;
 			return NULL;
 		}
 
 		unsigned char *pVersionData = 0;
 		unsigned int len;
-		if (!VerQueryValueW(fileInfo, L"\\", (void **)&pVersionData, &len)){
+		if (!VerQueryValue(fileInfo, L"\\", (void **)&pVersionData, &len)){
 			delete []fileInfo;
 			return NULL;
 		}
@@ -36,15 +39,15 @@ namespace sysFile {
 		DWORD  verHandle = NULL;
 		UINT   size      = 0;
 		LPBYTE lpBuffer  = NULL;
-		DWORD  verSize   = GetFileVersionInfoSizeW( fileName, &verHandle);
+		DWORD  verSize   = GetFileVersionInfoSize( fileName, &verHandle);
 
 		if (verSize != NULL)
 		{
 			LPSTR verData = new char[verSize];
 
-			if (GetFileVersionInfoW( fileName, verHandle, verSize, verData))
+			if (GetFileVersionInfo( fileName, verHandle, verSize, verData))
 			{
-				if (VerQueryValueW(verData,L"\\",(VOID FAR* FAR*)&lpBuffer,&size))
+				if (VerQueryValue(verData,L"\\",(VOID FAR* FAR*)&lpBuffer,&size))
 				{
 					if (size)
 					{
@@ -75,6 +78,7 @@ namespace sysFile {
 		return std::wstring(L"");
 	}
 
+#ifdef __BORLANDC__
 	TExeFileInfo * GetExeVersion(wchar_t *fileName, WORD codePage){
 		if (!IsFileExist(fileName)) {
 			throw sysException::TExceptionFileNotFound(fileName);
@@ -115,7 +119,7 @@ namespace sysFile {
 			} *lpTranslate;
 
 			unsigned int langLen;
-			if (!VerQueryValueW(infoBuf, L"\\VarFileInfo\\Translation", (void **)&lpTranslate, &langLen)){
+			if (!VerQueryValue(infoBuf, L"\\VarFileInfo\\Translation", (void **)&lpTranslate, &langLen)){
 				throw TExceptionCantGetFileInfoQueryValue(fileName);
 			}
 
@@ -134,7 +138,7 @@ namespace sysFile {
 					for (std::vector<wchar_t *>::iterator it = info.begin(), itEnd = info.end(); it != itEnd; ++it) {
 						wsprintfW(&infoKey[25], L"%s", *it);
 						wchar_t *infoValue;
-						if (VerQueryValueW(infoBuf, infoKey, (void **)&infoValue, &infoValueSize)){
+						if (VerQueryValue(infoBuf, infoKey, (void **)&infoValue, &infoValueSize)){
 							exeFileInfo->Set(*it, infoValue);
 							//(*mapFileInfo)[std::wstring(*it)] = infoValue;
 						} else {
@@ -155,6 +159,18 @@ namespace sysFile {
 		}
 
         return NULL;
+	}
+#endif
+
+	bool IsFileExist(const char *file) {
+	  DWORD ftyp = GetFileAttributesA(file);
+	  if (ftyp == INVALID_FILE_ATTRIBUTES)
+		return false;  //something is wrong with your path!
+
+	  if (!(ftyp & FILE_ATTRIBUTE_DIRECTORY))
+		return true;   // this is not a directory!
+
+	  return false;    // this is not a file
 	}
 
 	bool IsFileExist(const wchar_t * file){
@@ -240,6 +256,7 @@ namespace sysFile {
 		return st.st_size;
 	}
 
+#ifdef __BORLANDC__
 	__int64 GetFileSize64(const wchar_t *file){
 		struct stati64 st;
 		_wstati64(file, &st);
@@ -266,6 +283,7 @@ namespace sysFile {
 			in.close();
 		}
     }
+#endif
 
 	void BinaryToStream(const unsigned char *buffer, int size, std::ostream *out) {
 		char hexBuffer[] = {0,0};
@@ -276,6 +294,7 @@ namespace sysFile {
 		}
     }
 
+#ifdef __BORLANDC__
 	void BinaryToStream(const wchar_t *file, std::ostream *out) {
 		std::ifstream in(file, std::ios_base::binary);
 
@@ -306,7 +325,9 @@ namespace sysFile {
 
 		return BinaryToString(file, cBuffer);
 	}
+#endif
 
+#ifdef __BORLANDC__
 	char * BinaryToString(const wchar_t *file, char *out) {
 		std::ifstream in(file, std::ios_base::binary);
 
@@ -349,6 +370,7 @@ namespace sysFile {
 		cBuffer[buffer.Length * 2] = 0;
 		return cBuffer;
 	}
+#endif
 
 	SYSTEMTIME GetFileLastModifyDateTimeUTC(const wchar_t *file){
 		HANDLE hFile = CreateFileW(
@@ -506,6 +528,7 @@ namespace sysFile {
 		return std::wstring(L"");
 	}
 
+#ifdef __BORLANDC__
     String GetFileNameWithoutExt(String path) {
     	for (int i = path.Length(); i >= 0; --i) {
 			if (path[i] == L'.') {
@@ -515,6 +538,7 @@ namespace sysFile {
 
 		return "";
 	}
+#endif
 
     //void ScanFiles(const wchar_t *dir, const wchar_t *filter, FileIteratorCallback fileIterator, bool bRecursive, const std::vector<std::wstring> *excludeFolders, void *data) {
     void ScanFiles(const wchar_t *dir, const wchar_t *filter, IScanIterator &scanIterator, bool bRecursive, bool &abort, const std::vector<std::wstring> *excludeFolders) {

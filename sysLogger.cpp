@@ -1,9 +1,12 @@
-//---------------------------------------------------------------------------
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
 
-//---------------------------------------------------------------------------
 #pragma package(smart_init)
+
+#endif
 
 namespace sysLogger {
 
@@ -47,6 +50,13 @@ bool CheckLogLevel(char logLevel) {
 }
 
 //---------------------------------------------------------------------------
+void LogA(int code, char logLevel, const char *file, const char *function, int line, int newLine) {
+	char msg[255];
+	sprintf(msg, "%d", code);
+	LogA(msg, logLevel, file, function, line, newLine);
+}
+
+//---------------------------------------------------------------------------
 void LogA(const char *msg, char logLevel, const char *file, const char *function, int line, int newLine) {
 	if (!CheckLogLevel(logLevel))  return;
 
@@ -60,111 +70,66 @@ void LogA(const char *msg, char logLevel, const char *file, const char *function
 		return;
 	}
 
-	char sLogLevel[20];
-
-	if (logLevel == LOG_LEVEL_TRACE) {
-		sprintf(sLogLevel, "[TRACE  ]\t");
-
-	} else if (logLevel == LOG_LEVEL_DEBUG) {
-		sprintf(sLogLevel, "[DEBUG  ]\t");
-
-	} else if (logLevel == LOG_LEVEL_WARNING) {
-		sprintf(sLogLevel, "[WARNING]\t");
-
-	} else if (logLevel == LOG_LEVEL_ERROR) {
-		sprintf(sLogLevel, "[ERROR  ]\t");
-
-	} else if (logLevel == LOG_LEVEL_PROFILE) {
-		sprintf(sLogLevel, "[PROFILE]\t");
-	}
-
-	DWORD threadId = GetCurrentThreadId();
-	char sThreadId[20];
-	sprintf(sThreadId, "thread: [%d] ", threadId);
-
-	char sSourceInfo[255];
-	sprintf(sSourceInfo, "%s[%s]:%d\t", file, function, line);
-
-	SYSTEMTIME systemTime;
-	GetLocalTime(&systemTime);
-
-	char *sDateTime = sysTime::GetDateTime(systemTime, "%.4d/%.2d/%.2d %.2d:%.2d:%.2d ");
-
-	EnterCriticalSection(&CS_WRITE_LOG);
-
-	size_t msgSize = strlen(msg);
-
-	if (msgSize > 0) {
-
-		char *sDate = sysTime::GetCurrentDateGMT();
-
+	/*
+	if (newLine == 0) {
 		char logFile[255];
+		char *sDate = sysTime::GetCurrentDateGMT();
 		sprintf(logFile, "%s_%s.log", LOG_FILE_A, sDate);
-
 		delete []sDate;
+
+		size_t msgSize = strlen(msg);
+
+		EnterCriticalSection(&CS_WRITE_LOG);
 
 		FILE *f = fopen(logFile, "ab");
 		if (f != NULL) {
-			fwrite(sLogLevel, sizeof(char), strlen(sLogLevel), f);
-			fwrite(sDateTime, sizeof(char), strlen(sDateTime), f);
-			fwrite(sThreadId, sizeof(char), strlen(sThreadId), f);
-			fwrite(sSourceInfo, sizeof(char), strlen(sSourceInfo), f);
 			fwrite(msg, sizeof(char), msgSize, f);
-			if (msg[msgSize - 1] != '\n' && newLine == 1) {
-				static char *__rn = "\r\n";
-				fwrite(__rn, sizeof(char), 2, f);
-			}
+			fwrite("\r\n", sizeof(char), 2, f);
 			fclose(f);
 		}
-	}
 
-	LeaveCriticalSection(&CS_WRITE_LOG);
+		LeaveCriticalSection(&CS_WRITE_LOG);
+	} else {
+	*/
+		char sLogLevel[20];
 
-	delete []sDateTime;
-}
+		if (logLevel == LOG_LEVEL_TRACE) {
+			sprintf(sLogLevel, "[TRACE  ]\t");
 
-void LogW(const wchar_t *msg, char logLevel, const char *file, const char *function, int line, int newLine) {
-	if (!CheckLogLevel(logLevel))  return;
+		} else if (logLevel == LOG_LEVEL_DEBUG) {
+			sprintf(sLogLevel, "[DEBUG  ]\t");
 
-	char sLogLevel[20];
+		} else if (logLevel == LOG_LEVEL_WARNING) {
+			sprintf(sLogLevel, "[WARNING]\t");
 
-	if (logLevel == LOG_LEVEL_TRACE) {
-		sprintf(sLogLevel, "[TRACE  ]\t");
+		} else if (logLevel == LOG_LEVEL_ERROR) {
+			sprintf(sLogLevel, "[ERROR  ]\t");
 
-	} else if (logLevel == LOG_LEVEL_DEBUG) {
-		sprintf(sLogLevel, "[DEBUG  ]\t");
+		} else if (logLevel == LOG_LEVEL_PROFILE) {
+			sprintf(sLogLevel, "[PROFILE]\t");
+		}
 
-	} else if (logLevel == LOG_LEVEL_WARNING) {
-		sprintf(sLogLevel, "[WARNING]\t");
+		DWORD threadId = GetCurrentThreadId();
+		char sThreadId[20];
+		sprintf(sThreadId, "thread: [%d] ", threadId);
 
-	} else if (logLevel == LOG_LEVEL_ERROR) {
-		sprintf(sLogLevel, "[ERROR  ]\t");
+		char sSourceInfo[255];
+		sprintf(sSourceInfo, "%s[%s]:%d\t", file, function, line);
 
-	} else if (logLevel == LOG_LEVEL_PROFILE) {
-		sprintf(sLogLevel, "[PROFILE]\t");
-	}
+		SYSTEMTIME systemTime;
+		GetLocalTime(&systemTime);
 
-	DWORD threadId = GetCurrentThreadId();
-	char sThreadId[20];
-	sprintf(sThreadId, "thread: [%d] ", threadId);
+		char *sDateTime = sysTime::GetDateTime(systemTime, "%.4d/%.2d/%.2d %.2d:%.2d:%.2d ");
 
-	char sSourceInfo[255];
-	sprintf(sSourceInfo, "%s[%s]:%d\t", file, function, line);
+		EnterCriticalSection(&CS_WRITE_LOG);
 
-	SYSTEMTIME systemTime;
-	GetLocalTime(&systemTime);
+		size_t msgSize = strlen(msg);
 
-	char *sDateTime = sysTime::GetDateTime(systemTime, "%.4d/%.2d/%.2d %.2d:%.2d:%.2d ");
-
-	EnterCriticalSection(&CS_WRITE_LOG);
-
-	char *mbMsg;
-	int mbMsgSize;
-	if (sysStr::WideCharToUTF8(msg, -1, mbMsg, mbMsgSize)) {
-		if (mbMsgSize > 0) {
-			char logFile[255];
+		if (msgSize > 0) {
 
 			char *sDate = sysTime::GetCurrentDateGMT();
+
+			char logFile[255];
 			sprintf(logFile, "%s_%s.log", LOG_FILE_A, sDate);
 
 			delete []sDate;
@@ -175,19 +140,120 @@ void LogW(const wchar_t *msg, char logLevel, const char *file, const char *funct
 				fwrite(sDateTime, sizeof(char), strlen(sDateTime), f);
 				fwrite(sThreadId, sizeof(char), strlen(sThreadId), f);
 				fwrite(sSourceInfo, sizeof(char), strlen(sSourceInfo), f);
-				fwrite(mbMsg, sizeof(char), mbMsgSize - 1, f);
-				if (mbMsg[mbMsgSize - 2] != '\n' && newLine == 1) {
+				fwrite(msg, sizeof(char), msgSize, f);
+				if (msg[msgSize - 1] != '\n' && newLine == 1) {
 					static char *__rn = "\r\n";
 					fwrite(__rn, sizeof(char), 2, f);
 				}
 				fclose(f);
 			}
 		}
-	}
 
-	LeaveCriticalSection(&CS_WRITE_LOG);
+		LeaveCriticalSection(&CS_WRITE_LOG);
 
-	delete []sDateTime;
+		delete []sDateTime;
+	//}
+}
+
+void LogW(int code, char logLevel, const char *file, const char *function, int line, int newLine) {
+	wchar_t msg[255];
+	swprintf(msg, L"%d", code);
+	LogW(msg, logLevel, file, function, line, newLine);
+}
+
+void LogW(const wchar_t *msg, char logLevel, const char *file, const char *function, int line, int newLine) {
+	if (!CheckLogLevel(logLevel))  return;
+
+	/*
+	if (newLine == 0) {
+		EnterCriticalSection(&CS_WRITE_LOG);
+
+		char *mbMsg;
+		int mbMsgSize;
+		if (sysStr::WideCharToUTF8(msg, -1, mbMsg, mbMsgSize)) {
+			if (mbMsgSize > 0) {
+				char logFile[255];
+
+				char *sDate = sysTime::GetCurrentDateGMT();
+				sprintf(logFile, "%s_%s.log", LOG_FILE_A, sDate);
+
+				delete []sDate;
+
+				FILE *f = fopen(logFile, "ab");
+				if (f != NULL) {
+					fwrite(mbMsg, sizeof(char), mbMsgSize - 1, f);
+					fwrite("\r\n", sizeof(char), 2, f);
+					fclose(f);
+				}
+			}
+		}
+
+		LeaveCriticalSection(&CS_WRITE_LOG);
+	} else {
+	*/
+		char sLogLevel[20];
+
+		if (logLevel == LOG_LEVEL_TRACE) {
+			sprintf(sLogLevel, "[TRACE  ]\t");
+
+		} else if (logLevel == LOG_LEVEL_DEBUG) {
+			sprintf(sLogLevel, "[DEBUG  ]\t");
+
+		} else if (logLevel == LOG_LEVEL_WARNING) {
+			sprintf(sLogLevel, "[WARNING]\t");
+
+		} else if (logLevel == LOG_LEVEL_ERROR) {
+			sprintf(sLogLevel, "[ERROR  ]\t");
+
+		} else if (logLevel == LOG_LEVEL_PROFILE) {
+			sprintf(sLogLevel, "[PROFILE]\t");
+		}
+
+		DWORD threadId = GetCurrentThreadId();
+		char sThreadId[20];
+		sprintf(sThreadId, "thread: [%d] ", threadId);
+
+		char sSourceInfo[255];
+		sprintf(sSourceInfo, "%s[%s]:%d\t", file, function, line);
+
+		SYSTEMTIME systemTime;
+		GetLocalTime(&systemTime);
+
+		char *sDateTime = sysTime::GetDateTime(systemTime, "%.4d/%.2d/%.2d %.2d:%.2d:%.2d ");
+
+		EnterCriticalSection(&CS_WRITE_LOG);
+
+		char *mbMsg;
+		int mbMsgSize;
+		if (sysStr::WideCharToUTF8(msg, -1, mbMsg, mbMsgSize)) {
+			if (mbMsgSize > 0) {
+				char logFile[255];
+
+				char *sDate = sysTime::GetCurrentDateGMT();
+				sprintf(logFile, "%s_%s.log", LOG_FILE_A, sDate);
+
+				delete []sDate;
+
+				FILE *f = fopen(logFile, "ab");
+				if (f != NULL) {
+					fwrite(sLogLevel, sizeof(char), strlen(sLogLevel), f);
+					fwrite(sDateTime, sizeof(char), strlen(sDateTime), f);
+					fwrite(sThreadId, sizeof(char), strlen(sThreadId), f);
+					fwrite(sSourceInfo, sizeof(char), strlen(sSourceInfo), f);
+					fwrite(mbMsg, sizeof(char), mbMsgSize - 1, f);
+					if (mbMsg[mbMsgSize - 2] != '\n' && newLine == 1) {
+						static char *__rn = "\r\n";
+						fwrite(__rn, sizeof(char), 2, f);
+					}
+					fclose(f);
+				}
+			}
+		}
+
+		LeaveCriticalSection(&CS_WRITE_LOG);
+
+		delete []sDateTime;
+	//}
 }
 
 void SaveProfile(const wchar_t *profilePath) {

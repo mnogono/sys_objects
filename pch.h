@@ -1,22 +1,31 @@
-#ifndef PCH_H
-#define PCH_H
+#pragma once
 
 #include "windows.h"
 
 //standard borland headers --------------------------
+
+#ifdef __BORLANDC__
+
 #include <vcl.h>
 #include <Data.DBXJSON.hpp>
 #include <Vcl.Grids.hpp>
 #include <System.DateUtils.hpp>
 
+#endif
+
 //standard headers ----------------------------------
+#include <iostream>
+#include <stdlib.h>
 #include <assert.h>
 #include <tchar.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <stdarg.h>
 #include <float.h>
+
+#define _USE_MATH_DEFINES
 #include <math.h>
+
 #include <TlHelp32.h>
 #include <cstdio>
 #include <float.h>
@@ -58,5 +67,3 @@
 #include "sysApp.h"
 #include "sysOO.h"
 #include "sysVCL.h"
-
-#endif

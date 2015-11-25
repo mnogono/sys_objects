@@ -5,6 +5,10 @@
 
 //---------------------------------------------------------------------------
 
+#ifndef __BORLANDC__
+	typedef unsigned long long ULONGLONG;
+#endif
+
 namespace sysTime {
 	extern const double DAY2MSEC;
 	extern const double DAY2SEC;
@@ -42,6 +46,7 @@ namespace sysTime {
 	return int number like YYYYMMDD
 	*/
 	int GetDateAsInt(const TDateTime &dt);
+#endif
 
 	/*
 	wFormat like L"%d-%d-%d"
@@ -58,10 +63,12 @@ namespace sysTime {
 	//wFormat like L"%d-%d-%d %d:%d:%d"
 	wchar_t *GetDateTime(const SYSTEMTIME &st, const wchar_t *wFormat);
 
+#ifdef __BORLANDC__
     /*
     oonvert local time dt to seconds since 1 jan 1970;
     */
     long GetSecondsLocalTime(TDateTime *dt);
+#endif
 
     /*
 	return c-string like "YYYYMMDD"
@@ -69,6 +76,7 @@ namespace sysTime {
     */
     char * GetCurrentDateGMT();
 
+#ifdef __BORLANDC__
     /*
     wBuffer must be allocated before execute function
     */
@@ -151,15 +159,17 @@ namespace sysTime {
     */
     char CompareSystemTime(const SYSTEMTIME &st1, const SYSTEMTIME &st2);
 
-//	SYSTEMTIME ConvertGMTSystemTimeToLocalSystemTime(const SYSTEMTIME &st);
+	//SYSTEMTIME ConvertGMTSystemTimeToLocalSystemTime(const SYSTEMTIME &st);
 
 	//concept of sysTime library for working with FILETIME, SYSTEMTIME
 
+#ifdef __BORLANDC__
 	//convert borland date time into unix time (count of seconds since 1970)
 	__int64 ConvertToUnixTime(const TDateTime &dt);
 
 	//convert borland date time into unix time (count of milliseconds since 1970)
 	__int64 ConvertToUnixTimeMilliseconds(const TDateTime &dt);
+#endif
 }
 
 #endif

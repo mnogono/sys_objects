@@ -1,10 +1,16 @@
-//---------------------------------------------------------------------------
 #include "pch.h"
+
+#ifdef __BORLANDC__
+
 #pragma hdrstop
-//---------------------------------------------------------------------------
+
 #pragma package(smart_init)
 
+#endif
+
 namespace sysVCL {
+
+#ifdef __BORLANDC__
 
 int FindComboBoxItemByObject(TComboBox *comboBox, String object) {
 	for (int itItem = 0; itItem < comboBox->Items->Count; ++itItem) {
@@ -149,4 +155,5 @@ TComponent * StringToComponent(const String &stringComponent) {
 	return component;
 }
 
+#endif
 }

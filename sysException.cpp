@@ -1,11 +1,12 @@
-//---------------------------------------------------------------------------
 #include "pch.h"
-#pragma hdrstop
 
-//---------------------------------------------------------------------------
+#ifdef __BORLANDC__
+
+#pragma hdrstop
 
 #pragma package(smart_init)
 
+#endif
 
 namespace sysException {
 	TException::TException(std::wstring &msg) {

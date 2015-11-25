@@ -55,14 +55,19 @@ namespace sysFile {
 	*/
 	//TExeFileInfo * GetExeVersion(wchar_t * fileName, unsigned int codePage = 0);
 
+
+#ifdef __BORLANDC__
 	/**
 	@return file version string or empty string
 	*/
 	std::wstring getExeVersion(const wchar_t *file, WORD codePage = 1251);
+#endif
+
+	bool IsFileExist(const char *file);
 
 	bool IsFileExist(const wchar_t *file);
 
-	bool IsFolderExist(const wchar_t * folder);
+	bool IsFolderExist(const wchar_t *folder);
 
 	bool IsFolderExist(const char *folder);
 
@@ -70,10 +75,11 @@ namespace sysFile {
 
 	size_t GetFileSize(const char *file);
 
+#ifdef __BORLANDC__
 	__int64 GetFileSize64(const wchar_t *file);
 
 	__int64 GetFileSize64(const char *file);
-
+#endif
 
 
 	/*
@@ -96,6 +102,7 @@ namespace sysFile {
 	*/
 	char * BinaryToString(const wchar_t *file, char *out);
 
+#ifdef __BORLANDC__
 	/*
 	convert each byte of buffer to hex text like "XX" and return string
 	*/
@@ -106,8 +113,7 @@ namespace sysFile {
     use function sysFile::GetFileSize for allocate memmory for buffer
     */
     void FileToByteBuffer(const wchar_t *file, unsigned char *buffer);
-
-	SYSTEMTIME GetFileLastModifyDateTimeUTC(const wchar_t *file);
+#endif
 
 	/*
 		return specify executable module path
@@ -156,8 +162,11 @@ namespace sysFile {
 
 	std::wstring GetFolder(const wchar_t *path);
 
+#ifdef __BORLANDC__
+
     //return file name without extension
     String GetFileNameWithoutExt(String path);
+#endif
 
 	//function pointer for callback function FilesIteration function
     typedef void (*FileIteratorCallback)(const wchar_t *folder, const WIN32_FIND_DATAW &ffd, void *data);
