@@ -157,3 +157,4 @@ TComponent * StringToComponent(const String &stringComponent) {
 
 #endif
 }
+

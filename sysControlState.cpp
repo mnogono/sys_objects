@@ -68,25 +68,53 @@ namespace sysControlState {
 		return std::unique_ptr<TJSONObject> (NULL);
 	}
 
+	#if __CODEGEARC__ < 0x690
+	void RestoreEditState(TJSONObject *jsonState, TEdit *edit) {
+		edit->Text = jsonState->GetValue("Text")->Value();
+	}
+	#else
 	void RestoreEditState(TJSONObject *jsonState, TEdit *edit) {
 		edit->Text = jsonState->Values["Text"]->Value();
 	}
+	#endif
 
+    #if __CODEGEARC__ < 0x690
+	void RestoreCheckBoxState(TJSONObject *jsonState, TCheckBox *checkBox) {
+		TJSONValue *jsonChecked = jsonState->GetValue("Checked");
+		checkBox->Checked = dynamic_cast<TJSONTrue *>(jsonChecked);
+	}
+	#else
 	void RestoreCheckBoxState(TJSONObject *jsonState, TCheckBox *checkBox) {
 		TJSONValue *jsonChecked = jsonState->Values["Checked"];
 		checkBox->Checked = dynamic_cast<TJSONTrue *>(jsonChecked);
 	}
+	#endif
 
+	#if __CODEGEARC__ < 0x690
+	void RestoreDateTimeState(TJSONObject *jsonState, TDateTimePicker *dateTimePicker) {
+		TJSONNumber *jsonVal = static_cast<TJSONNumber *>(jsonState->GetValue("Val"));
+		dateTimePicker->DateTime = jsonVal->AsDouble;
+	}
+	#else
 	void RestoreDateTimeState(TJSONObject *jsonState, TDateTimePicker *dateTimePicker) {
 		TJSONNumber *jsonVal = static_cast<TJSONNumber *>(jsonState->Values["Val"]);
 		dateTimePicker->DateTime = jsonVal->AsDouble;
 	}
+	#endif
 
+	#if __CODEGEARC__ < 0x690
+	void RestoreDateTimePicker(TJSONObject *jsonState, TDateTimePicker *dateTimePicker) {
+		if (jsonState->GetValue("DateTime")) {
+			RestoreDateTimeState(static_cast<TJSONObject *>(jsonState->GetValue("DateTime")), dateTimePicker);
+		}
+	}
+	#else
 	void RestoreDateTimePicker(TJSONObject *jsonState, TDateTimePicker *dateTimePicker) {
 		if (jsonState->Values["DateTime"]) {
 			RestoreDateTimeState(static_cast<TJSONObject *>(jsonState->Values["DateTime"]), dateTimePicker);
 		}
 	}
+	#endif
 
 	void RestoreControlState(std::unique_ptr<TJSONObject> &jsonAppSettings, TControl *control, String prefix) {
 		String key;
@@ -96,11 +124,19 @@ namespace sysControlState {
 			key = prefix + control->Name;
 		}
 
+		#if __CODEGEARC__ < 0x690
+		if (!jsonAppSettings->GetValue(key)) {
+			return;
+		}
+		TJSONObject *jsonSettings = static_cast<TJSONObject *>(jsonAppSettings->GetValue(key));
+		#else
 		if (!jsonAppSettings->Values[key]) {
 			return;
 		}
-
 		TJSONObject *jsonSettings = static_cast<TJSONObject *>(jsonAppSettings->Values[key]);
+		#endif
+
+
 		if (dynamic_cast<TEdit *>(control)) {
 			RestoreEditState(jsonSettings, static_cast<TEdit *>(control));
 

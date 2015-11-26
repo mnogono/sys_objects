@@ -15,11 +15,20 @@ JNIEnv * AttachCurrentThread(JavaVM *jvm) {
 	JNIEnv * env;
 	int getEnvStat = jvm->GetEnv((void **)&env, JNI_VERSION);
 	if (getEnvStat == JNI_EDETACHED) {
-		if (jvm->AttachCurrentThread((void **) &env, NULL) != 0) {
+		if (jvm->AttachCurrentThread((void **) &env, NULL) != JNI_OK) {
+			sysLogger::ERR_A("AttachCurrentThread FAIL (JNI_EDETACHED)");
+
 			return NULL;
+		} else {
+			//sysLogger::TRACE_A("jvm->AttachCurrentThread == JNI_OK");
 		}
+
 	} else if (getEnvStat == JNI_OK) {
+		//sysLogger::TRACE_A("AttachCurrentThread JNI_OK");
+
 	} else if (getEnvStat == JNI_EVERSION) {
+		sysLogger::ERR_A("AttachCurrentThread FAIL (JNI_EVERSION)");
+
 		return NULL;
 	}
 
@@ -82,18 +91,106 @@ JavaVM * CreateJVM(const char *jvmPropertyFile) {
 
 
 JavaVM * CreateJVM(JavaVMInitArgs vm_args) {
-	wchar_t *runtimeLib = NULL;
-	wchar_t *currentVersion;
+	wchar_t *currentVersion = NULL;
+	//wchar_t *runtimeLib = NULL;
+	wchar_t *javaHome = NULL;
+	JavaVM *jvm = NULL;
+
+	if (sysReg::RegQueryStringValue(HKEY_LOCAL_MACHINE, L"SOFTWARE\\JavaSoft\\Java Runtime Environment", L"CurrentVersion", currentVersion) == true) {
+		wchar_t regKey[1024];
+		swprintf(regKey, 1024, L"SOFTWARE\\JavaSoft\\Java Runtime Environment\\%s", currentVersion);
+
+		if (sysReg::RegQueryStringValue(HKEY_LOCAL_MACHINE, regKey, L"JavaHome", javaHome) == true) {
+			wchar_t jvmDllPath[1024];
+			swprintf(jvmDllPath, 1024, L"%s\\bin\\server\\jvm.dll", javaHome);
+
+			if (sysFile::IsFileExist(jvmDllPath) == true) {
+				JNIEnv *env;
+
+				HINSTANCE hinstLib;
+				_JNI_CreateJavaVM pJNI_CreateJavaVM;
+
+				hinstLib = LoadLibrary(jvmDllPath);
+				if (hinstLib == NULL) {
+					DWORD e = GetLastError();
+					sysLogger::ERR_A("jvm.dll file path:");
+					sysLogger::ERR_W(jvmDllPath);
+					sysLogger::ERR_A("can't load library jvm.dll LastErrorCode: ");
+					sysLogger::ERR_A_((int)e);
+					return NULL;
+				}
+
+				pJNI_CreateJavaVM = (_JNI_CreateJavaVM) GetProcAddress(hinstLib, "JNI_CreateJavaVM");
+				if (pJNI_CreateJavaVM != NULL) {
+					jint rc = pJNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
+					if(rc != JNI_OK) {
+						if(rc == JNI_EVERSION) {
+							sysLogger::ERR_A("VM is oudated and doesn't meet requirements");
+						} else if(rc == JNI_ENOMEM) {
+							sysLogger::ERR_A("not enough memory for JVM");
+						} else if(rc == JNI_EINVAL) {
+							sysLogger::ERR_A("invalid ragument for launching JVM");
+						} else if(rc == JNI_EEXIST) {
+							sysLogger::ERR_A("the process can only launch one JVM an not more");
+						} else {
+							sysLogger::ERR_A("could not create the JVM instance error code: ");
+							sysLogger::ERR_A_(rc);
+						}
+
+						sysLogger::ERR_A("could not create the JVM unknown error code");
+					} else {
+						//sysLogger::ERR_A("detach current main thread afrea create");
+						//DetachCurrentThread(jvm);
+					}
+				}				
+			} else {
+				sysLogger::ERR_A("jvm.dll not found:");
+				sysLogger::ERR_W(jvmDllPath);
+			}
+		} else {
+			sysLogger::ERR_A("can't find reg key:");
+			sysLogger::ERR_W(regKey);
+		}
+	} else {
+		sysLogger::ERR_A("can't find reg key HKLM\\SOFTWARE\\JavaSorft\\Java Runtime Environment\\CurrentVersion");
+	}
+
+	if (currentVersion != NULL) {
+		delete []currentVersion;
+		currentVersion = NULL;
+	}	
+	/*
+	if (runtimeLib != NULL) {
+		delete []runtimeLib;
+		runtimeLib = NULL;
+	}
+	*/
+	if (javaHome != NULL) {
+		delete []javaHome;
+		javaHome = NULL;
+	}
+
+	return jvm;
+	/*
+
 	if (sysReg::RegQueryStringValue(HKEY_LOCAL_MACHINE, L"SOFTWARE\\JavaSoft\\Java Runtime Environment", L"CurrentVersion", currentVersion) == true) {
 		wchar_t javaRuntimeEnvironment[1024];
 		swprintf(javaRuntimeEnvironment, 1024, L"SOFTWARE\\JavaSoft\\Java Runtime Environment\\%s", currentVersion);
 
+		if (sysReg::RegQueryStringValue(HKEY_LOCAL_MACHINE, javaRuntimeEnvironment, L"JavaHome", javaHome) == true) {
+			
+		} else {
+			sysLogger::ERR_A("can't find reg key HKLM\\SOFTWARE\\JavaSorft\\Java Runtime Environment\\%version%\\JavaHome");
+			return NULL;			
+		}
+		
 		if (sysReg::RegQueryStringValue(HKEY_LOCAL_MACHINE, javaRuntimeEnvironment, L"RuntimeLib", runtimeLib) == true) {
 			
 		} else {
 			sysLogger::ERR_A("can't find reg key HKLM\\SOFTWARE\\JavaSorft\\Java Runtime Environment\\%version%\\RuntimeLib");
 			return NULL;
 		}
+		
 	} else {
 		sysLogger::ERR_A("can't find reg key HKLM\\SOFTWARE\\JavaSorft\\Java Runtime Environment\\CurrentVersion");
 		return NULL;
@@ -132,6 +229,8 @@ JavaVM * CreateJVM(JavaVMInitArgs vm_args) {
 					sysLogger::ERR_A("could not create the JVM instance error code: ");
 					sysLogger::ERR_A_(rc);
 				}
+
+				sysLogger::ERR_A("could not create the JVM unknown error code");
 				return NULL;
 			}
 		}
@@ -139,18 +238,25 @@ JavaVM * CreateJVM(JavaVMInitArgs vm_args) {
 		return jvm;
 	}
 
+	sysLogger::ERR_A("could not create the JVM");
 	return NULL;
+	*/
 }
 
 bool RegisterNatives(JNIEnv *env, jclass jClass, JNINativeMethod *methods, int count) {
+	//sysLogger::TRACE_A("0");
+
 	if (env->RegisterNatives(jClass, methods, count) < 0) {
-		CheckException(env);
-		/*
+
+		//sysLogger::TRACE_A("1");
+
+		//CheckException(env);
 		if (env->ExceptionOccurred()) {
 			sysLogger::ERR_A("exception when register natives");
 		}
-		*/
 	}
+
+	//sysLogger::TRACE_A("2");
 
 	return true;
 }
