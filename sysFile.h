@@ -172,16 +172,15 @@ namespace sysFile {
     typedef void (*FileIteratorCallback)(const wchar_t *folder, const WIN32_FIND_DATAW &ffd, void *data);
 
     struct IScanIterator {
-    	//Return true if ScanFiles function can go to the next file, otherwise false
+    	//Return continue status (true - continue iteration, false abort iterator)
     	virtual bool ScanIterateCallback(const wchar_t *folder, const WIN32_FIND_DATAW &ffd, void *data = NULL) = 0;
     };
 
     /*
-	    iterate over all files in directory and invoke callback function, recursive
-        excludeFolders - vector of absolude path of exclude folders, for do not iterate inside it
-    */
-    //void ScanFiles(const wchar_t *dir, const wchar_t *filter, FileIteratorCallback callback, bool bRecursive, const std::vector<std::wstring> *excludeFolders = NULL, void *data = NULL);
-    void ScanFiles(const wchar_t *dir, const wchar_t *filter, IScanIterator &scanIterator, bool bRecursive, bool &abort, const std::vector<std::wstring> *excludeFolders = NULL);
+		iterate over all files in directory and invoke callback function, recursive
+		excludeFolders - vector of absolude path of exclude folders, for do not iterate inside it
+	*/
+	void ScanFiles(const wchar_t *dir, const wchar_t *filter, IScanIterator &scanIterator, bool bRecursive, const std::vector<std::wstring> *excludeFolders = NULL);
 
 	//return true if folder is empty
     bool IsFolderEmpty(const wchar_t *folder);
@@ -243,7 +242,7 @@ namespace sysFile {
 	void AppendToFile(const wchar_t *destFile, const char *buffer, size_t size = 0);
 
     /*
-    return age of file in msec
+    return age of file in msec (time spend after creation)
     */
     ULONGLONG GetFileAge(const WIN32_FIND_DATAW &ffd);
 
@@ -258,6 +257,9 @@ namespace sysFile {
 	//create all folders in wFolder
 	// @param wFolder absolute folder path
 	bool CreateFolder(const wchar_t *wFolder);
+
+	//delete all files in folder older then age
+	void DeleteFilesOlderThen(const wchar_t *folder, const wchar_t *filter, bool recursive, ULONGLONG age);
 }
 
 #endif

@@ -541,17 +541,12 @@ namespace sysFile {
 #endif
 
     //void ScanFiles(const wchar_t *dir, const wchar_t *filter, FileIteratorCallback fileIterator, bool bRecursive, const std::vector<std::wstring> *excludeFolders, void *data) {
-    void ScanFiles(const wchar_t *dir, const wchar_t *filter, IScanIterator &scanIterator, bool bRecursive, bool &abort, const std::vector<std::wstring> *excludeFolders) {
-    	//check can we continue scan files
-    	if (abort) {
-			return;
-        }
-
+	void ScanFiles(const wchar_t *folder, const wchar_t *filter, IScanIterator &scanIterator, bool bRecursive, const std::vector<std::wstring> *excludeFolders) {
     	if (excludeFolders) {
         	size_t lenOfExcludeFolder;
 			for (size_t itExclude = 0; itExclude < excludeFolders->size(); ++itExclude) {
 				lenOfExcludeFolder = wcslen((*excludeFolders)[itExclude].c_str());
-                if (wcsncmp(dir, (*excludeFolders)[itExclude].c_str(), lenOfExcludeFolder) == 0) {
+                if (wcsncmp(folder, (*excludeFolders)[itExclude].c_str(), lenOfExcludeFolder) == 0) {
 					return;
                 }
             }
@@ -561,32 +556,35 @@ namespace sysFile {
 
         HANDLE hFile = INVALID_HANDLE_VALUE;
 
-        wchar_t wBuffer[MAX_PATH];
+		wchar_t wBuffer[MAX_PATH];
 
-        swprintf(wBuffer, MAX_PATH, L"%s%s", dir, filter);
+        swprintf(wBuffer, MAX_PATH, L"%s%s", folder, filter);
 
         hFile = FindFirstFileW(wBuffer, &ffd);
         if (hFile == INVALID_HANDLE_VALUE) {
 			return;
         }
 
-        bool isFolder;
-        do {
-            if (wcscmp(ffd.cFileName, L".") == 0) continue;
-            else if (wcscmp(ffd.cFileName, L"..") == 0) continue;
-
-        	isFolder = ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
-            if (isFolder) {
-            	swprintf(wBuffer, MAX_PATH, L"%s%s\\", dir, ffd.cFileName);
-            	ScanFiles(wBuffer, filter, scanIterator, bRecursive, abort, excludeFolders);
-            } else {
-            	//callback(dir, ffd, data);
-                abort = scanIterator.ScanIterateCallback(dir, ffd);
+		bool next = true;
+		bool isFolder;
+		do {
+			if (wcscmp(ffd.cFileName, L".") == 0) {
+				continue;
+			} else if (wcscmp(ffd.cFileName, L"..") == 0) {
+				continue;
 			}
-		} while (FindNextFileW(hFile, &ffd) && abort == false);
+
+			isFolder = ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
+			if (isFolder) {
+				swprintf(wBuffer, MAX_PATH, L"%s%s\\", folder, ffd.cFileName);
+				ScanFiles(wBuffer, filter, scanIterator, bRecursive, excludeFolders);
+			} else {
+				next = scanIterator.ScanIterateCallback(folder, ffd);
+			}
+		} while (FindNextFileW(hFile, &ffd) && next == true);
 
         FindClose(hFile);
-    }
+	}
 
     void GetFiles(const wchar_t *dir, std::vector<std::wstring> &files, const wchar_t *filter) {
 		WIN32_FIND_DATAW ffd;
@@ -999,6 +997,32 @@ namespace sysFile {
 
 		delete []wFolderBuffer;
 		return folders.size() > 1;
+	}
+
+	struct DeleteFileIterator : public sysFile::IScanIterator {
+		private:
+            ULONGLONG age;
+		public:
+
+		DeleteFileIterator(ULONGLONG age) {
+            this->age = age;
+		}
+
+		//Return true if ScanFiles function can go to the next file, otherwise false
+		virtual bool ScanIterateCallback(const wchar_t *folder, const WIN32_FIND_DATAW &ffd, void *data = NULL) {
+			if (GetFileAge(ffd) > age) {
+				wchar_t absolutePath[MAX_PATH];
+				if (snwprintf(absolutePath, MAX_PATH, L"%s%s", folder, ffd.cFileName) != -1) {
+                    DeleteFile(absolutePath);
+				}
+			}
+			return true;
+		}
+	};
+
+	void DeleteFilesOlderThen(const wchar_t *folder, const wchar_t *filter, bool recursive, ULONGLONG age) {
+		DeleteFileIterator iterator(age);
+		ScanFiles(folder, filter, iterator, recursive);
 	}
 }
 
