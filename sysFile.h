@@ -4,7 +4,6 @@
 //---------------------------------------------------------------------------
 
 namespace sysFile {
-
 	class TExceptionCantGetFileInfo : public sysException::TException {
 		public:
 			TExceptionCantGetFileInfo(wchar_t *fileName) : sysException::TException(L"") {
@@ -113,6 +112,8 @@ namespace sysFile {
     use function sysFile::GetFileSize for allocate memmory for buffer
     */
     void FileToByteBuffer(const wchar_t *file, unsigned char *buffer);
+	
+	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file);
 #endif
 
 	/*

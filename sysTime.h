@@ -170,6 +170,10 @@ namespace sysTime {
 	//convert borland date time into unix time (count of milliseconds since 1970)
 	__int64 ConvertToUnixTimeMilliseconds(const TDateTime &dt);
 #endif
+
+	typedef void (*TimeConsumeFunction)(void);
+	//return how ms consume for invoke funtion
+	clock_t GetTimeConsumeMs(TimeConsumeFunction pTimeConsume);
 }
 
 #endif

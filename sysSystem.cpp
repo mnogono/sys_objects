@@ -15,4 +15,11 @@ namespace sysSystem {
 
 		return sysinfo.dwNumberOfProcessors;
 	}
+
+	DWORD GetPageSize() {
+		SYSTEM_INFO sysinfo;
+		GetSystemInfo(&sysinfo);
+
+        return sysinfo.dwPageSize;
+	}
 }

@@ -9,6 +9,12 @@
 #endif
 
 namespace sysStr {
+	/*
+	template<class T>
+	std::wstring Join(T container, const wchar_t *sep) {
+		return std::wstring(L"");
+	}
+    */
 	wchar_t *JoinString(std::vector<std::wstring>::iterator first, std::vector<std::wstring>::iterator end, const wchar_t *sep){
 		std::wstringstream ss;
 		// ss << vec.front();

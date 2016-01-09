@@ -372,7 +372,7 @@ namespace sysFile {
 	}
 #endif
 
-	SYSTEMTIME GetFileLastModifyDateTimeUTC(const wchar_t *file){
+	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file){
 		HANDLE hFile = CreateFileW(
 			file,
 			GENERIC_READ,
@@ -396,8 +396,8 @@ namespace sysFile {
 
 		CloseHandle(hFile);
 
-		//return sysTime::SystemTimeToDateTime(&stUTC);
-        return stUTC;
+		return sysTime::SystemTimeToDateTime(&stUTC);
+        //return stUTC;
 	}
 
 

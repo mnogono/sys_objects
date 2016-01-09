@@ -5,6 +5,37 @@
 // ---------------------------------------------------------------------------
 
 namespace sysStr {
+	/*
+	convert container into wstring
+	*/
+	template<class C>
+	std::wstring Join(const C &container, const wchar_t *sep) {
+		typename C::const_iterator begin = container.begin();
+		typename C::const_iterator end = container.end();
+
+		return Join(begin, end, sep);
+	}
+
+	/*
+	convert container or array into wstring
+	@example:
+	int a[] = {1,2,3};
+	std::wstring str = sysStr::Join(&a[0], &a[2], L",");
+	*/
+	template<class Iterator>
+	std::wstring Join(Iterator begin, Iterator end, const wchar_t *sep) {
+		Iterator i = begin;
+
+		std::wstringstream wss;
+		for (; i != end; ++i) {
+			if (i != begin) {
+				wss << sep;
+			}
+			wss << *i;
+		}
+
+		return wss.str();
+	}
 
 	/* do not forget to delete result buffer */
 	/*

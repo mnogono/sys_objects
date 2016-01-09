@@ -259,4 +259,13 @@ namespace sysTime {
 	}
 #endif
 
+	clock_t GetTimeConsumeMs(TimeConsumeFunction pTimeConsume) {
+		//using namespace std;
+		clock_t begin = clock();
+
+		pTimeConsume();
+
+		return clock() - begin;
+	}
+
 }
