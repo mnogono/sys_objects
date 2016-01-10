@@ -236,6 +236,12 @@ namespace sysStr {
 	replace all key in str into value
 	*/
 	void ReplaceAll(std::string &str, const char *key, const char *value);
+
+	//simple convert ANSI wide string into ANSI narrow string
+	std::string WideToNarrow(const std::wstring &wstr);
+
+	//simple convert ANSI narrow string into ANSI wide string
+	std::wstring NarrowToWide(const std::string &str);
 }
 
 #endif

@@ -259,8 +259,8 @@ namespace sysFile {
 	// @param wFolder absolute folder path
 	bool CreateFolder(const wchar_t *wFolder);
 
-	//delete all files in folder older then age
-	void DeleteFilesOlderThen(const wchar_t *folder, const wchar_t *filter, bool recursive, ULONGLONG age);
+	//delete all files in folder older then age (ms)
+	void DeleteFilesOlderThen(const wchar_t *folder, const wchar_t *filter, bool recursive, ULONGLONG ageMs);
 }
 
 #endif
