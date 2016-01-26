@@ -4,6 +4,9 @@
 //---------------------------------------------------------------------------
 
 namespace sysWinPipe {
+#define SYS_WIN_PIPE_DEFAULT_BUFFER_SIZE 65536
+#define SYS_WIN_READ_TIMEOUT 10
+
 	/**
 	create new named pipe
 	return handle of created object
@@ -51,7 +54,14 @@ namespace sysWinPipe {
 	bool ConnectPipe(HANDLE hPipe, OVERLAPPED *overlapped);
 	*/
 
-	typedef void (*ReadPipeCallback)(char *buffer, DWORD size);
+
+	/**
+	callback execute from additional pipe reading thread
+	buffer - readed buffer data from pipe
+	size - size of buffer
+	context - any object NULL by default
+	*/
+	typedef void (*ReadPipeCallback)(char *buffer, DWORD size, void *context = NULL);
 
 	class TPipe {
 		public:
@@ -78,8 +88,8 @@ namespace sysWinPipe {
 				DWORD openMode = PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
 				DWORD pipeMode = PIPE_WAIT | PIPE_READMODE_BYTE | PIPE_TYPE_BYTE,
 				DWORD maxInstance = 1,
-				DWORD outBufferSize = 4096,
-				DWORD inBufferSize = 4096,
+				DWORD outBufferSize = SYS_WIN_PIPE_DEFAULT_BUFFER_SIZE,
+				DWORD inBufferSize = SYS_WIN_PIPE_DEFAULT_BUFFER_SIZE,
 				DWORD timeout = 5000);
 
 			//connect to pipe
@@ -103,9 +113,11 @@ namespace sysWinPipe {
 			//write to pipe
 			void mainClientLoop();
 
-			void setCallback(ReadPipeCallback readPipeCallback);
+			void setReadThreadCallback(ReadPipeCallback readPipeCallback);
 
 			void setPipeName(const wchar_t *pipeName);
+
+			void setCallbackContext(void *context);
 
 		private:
 			wchar_t *pipeName;
@@ -116,6 +128,7 @@ namespace sysWinPipe {
 			PACL pAccessACL;
 			CRITICAL_SECTION cs;
 			ReadPipeCallback readPipeCallback;
+			void *callbackContext;
 
 			bool canceledFlag;
 
@@ -124,10 +137,10 @@ namespace sysWinPipe {
 			void createSecurityInfo();
 
 			//waiting cient pipe connection
-			bool waitConnection(OVERLAPPED *overlapped);
+			bool waitConnection();
 
 			//loop reading pipe buffer
-			void read(OVERLAPPED *overlapped);
+			void read();
 
 			//return if true for interrupt waiting pipe connection or reading pipe data
 			bool canceled();
@@ -142,7 +155,7 @@ namespace sysWinPipe {
 			void unlock();
 
 			//invoke callback when buffer reads from pipe
-			void callback(char *buffer, DWORD size);
+			void callback(char *buffer, DWORD size, void *callbackContext);
 
 		public:
 			HANDLE event;

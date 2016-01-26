@@ -132,9 +132,11 @@ namespace sysWinPipe {
 		InitializeCriticalSection(&cs);
 
 		readPipeCallback = NULL;
+
+		callbackContext = NULL;
 	}
 
-	void TPipe::setCallback(ReadPipeCallback readPipeCallback) {
+	void TPipe::setReadThreadCallback(ReadPipeCallback readPipeCallback) {
 		this->readPipeCallback = readPipeCallback;
 	}
 
@@ -323,14 +325,8 @@ namespace sysWinPipe {
 	}
 
 	void TPipe::mainServerLoop() {
-		OVERLAPPED overlapped;
-		memset(&overlapped, 0, sizeof(overlapped));
-		overlapped.hEvent = event;
-
-		ResetEvent(event);
-
-		if (waitConnection(&overlapped)) {
-			read(&overlapped);
+		if (waitConnection()) {
+			read();
 		}
 	}
 
@@ -340,60 +336,79 @@ namespace sysWinPipe {
 		overlapped.hEvent = event;
 
 		ResetEvent(event);
-
-		/*
-		if (waitConnection(&overlapped)) {
-			read(&overlapped);
-		}
-		*/
 	}
 
-	void TPipe::read(OVERLAPPED *overlapped) {
-		const size_t size = 4096;
+	void TPipe::read() {
+		const size_t size = SYS_WIN_PIPE_DEFAULT_BUFFER_SIZE;
 		char buffer[size];
 		DWORD err;
-		DWORD timeout = 100;
+		DWORD timeout = 10;
 		DWORD readedBytes = 0;
+
+		OVERLAPPED overlapped;
 
 		while(1) {
 			if (canceled()) {
 				break;
 			}
 
-			memset(overlapped, 0, sizeof(*overlapped));
+			memset(&overlapped, 0, sizeof(overlapped));
+			overlapped.hEvent = event;
 			ResetEvent(event);
 
-			if (!ReadFile(hPipe, buffer, size, NULL, overlapped)) {
+			if (!ReadFile(hPipe, buffer, size, &readedBytes, &overlapped)) {
 				err = GetLastError();
 				if (err == ERROR_IO_PENDING) {
-					if (WaitForSingleObject(event, timeout) == WAIT_OBJECT_0){}
-				}
-			}
+					while(1) {
+						if (canceled()) {
+							break;
+						}
 
-			if (GetOverlappedResult(hPipe, overlapped, &readedBytes, false)) {
-                callback(buffer, readedBytes);
+						if (WaitForSingleObject(event, timeout) == WAIT_OBJECT_0) {
+							if (GetOverlappedResult(hPipe, &overlapped, &readedBytes, false)) {
+								callback(buffer, readedBytes, callbackContext);
+								/*
+								char _readedBytes[sizeof(readedBytes)];
+								memcpy(&_readedBytes[0], &readedBytes, sizeof(readedBytes));
+								writeSync(_readedBytes, sizeof(readedBytes));
+								*/
+							} else {
+								sysLogger::ERR_A("get overlappped result, GLE");
+								sysLogger::ERR_A(GetLastError());
+							}
+							break;
+						}
+					}
+				}
 			} else {
-				sysLogger::ERR_A("get overlappped result, GLE");
-				sysLogger::ERR_A(GetLastError());
+				OutputDebugString(L"asdasd");
+				callback(buffer, readedBytes, callbackContext);
 			}
 		}
 	}
 
-	void TPipe::callback(char *buffer, DWORD size) {
+	void TPipe::callback(char *buffer, DWORD size, void *callbackContext) {
 		if (readPipeCallback) {
 			lock();
-			readPipeCallback(buffer, size);
+			readPipeCallback(buffer, size, callbackContext);
 			unlock();
 		}
 	}
 
-	bool TPipe::waitConnection(OVERLAPPED *overlapped) {
+
+	bool TPipe::waitConnection() {
+		OVERLAPPED overlapped;
+		memset(&overlapped, 0, sizeof(overlapped));
+		overlapped.hEvent = event;
+
+		ResetEvent(event);
+
 		DWORD err;
 		DWORD overlappedResult = 0;
 		DWORD timeout = 100;
 
 		//wait until get client pipe connection, check connection every timeout ms
-		if (!ConnectNamedPipe(hPipe, overlapped)) {
+		if (!ConnectNamedPipe(hPipe, &overlapped)) {
 			err = GetLastError();
 			if (err == ERROR_IO_PENDING) {
 				//wating ending of connection procedure
@@ -403,7 +418,7 @@ namespace sysWinPipe {
 					}
 
 					if (WaitForSingleObject(event, timeout) == WAIT_OBJECT_0 &&
-						GetOverlappedResult(hPipe, overlapped, &overlappedResult, false)) {
+						GetOverlappedResult(hPipe, &overlapped, &overlappedResult, false)) {
 						overlappedResult = ERROR_PIPE_CONNECTED;
 						break;
 					}
@@ -496,5 +511,9 @@ namespace sysWinPipe {
 
 	void TPipe::unlock() {
     	LeaveCriticalSection(&cs);
+	}
+
+	void TPipe::setCallbackContext(void *callbackContext) {
+		this->callbackContext = callbackContext;
 	}
 }

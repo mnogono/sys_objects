@@ -769,4 +769,22 @@ namespace sysStr {
 	std::wstring NarrowToWide(const std::string &str) {
 		return std::wstring(str.begin(), str.end());
 	}
+
+	wchar_t * ReplaceAll(wchar_t *str, const wchar_t key, const wchar_t value) {
+		for (int i = 0, len = wcslen(str); i < len; ++i) {
+			if (str[i] == key) {
+				str[i] = value;
+			}
+		}
+		return str;
+	}
+
+	char * ReplaceAll(char *str, const char key, const char value) {
+		for (int i = 0, len = strlen(str); i < len; ++i) {
+			if (str[i] == key) {
+				str[i] = value;
+			}
+		}
+		return str;
+	}
 }

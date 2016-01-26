@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 
 namespace sysFile {
+
 	class TExceptionCantGetFileInfo : public sysException::TException {
 		public:
 			TExceptionCantGetFileInfo(wchar_t *fileName) : sysException::TException(L"") {
@@ -112,8 +113,6 @@ namespace sysFile {
     use function sysFile::GetFileSize for allocate memmory for buffer
     */
     void FileToByteBuffer(const wchar_t *file, unsigned char *buffer);
-	
-	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file);
 #endif
 
 	/*
@@ -129,12 +128,28 @@ namespace sysFile {
 	*/
 	bool GetExecutablePath(wchar_t *outPath, int maxPathLen, HMODULE hModule = NULL);
 
+	/*
+		return string of absolute path
+		do not forget to delete returned buffer
+	*/
+	wchar_t *GetAbsolutePath(const wchar_t *relativePath);
+	
+	wchar_t *GetAbsolutePath(const wchar_t *relativePath, const wchar_t delim);
+
+	char *GetAbsolutePath(const char *relativePath);
+
+	char *GetAbsolutePath(const char *relativePath, const char delim);
+
+	//std::string GetAbsolutePath(const std::string &relativePath);
+
     /*
     	return executable folder absolute path
 		example C:\Debug
         do not forget to delete returned buffer
     */
     wchar_t * GetExecutableFolder(HMODULE hModule = NULL);
+
+	char *GetExecutableFolderA();
 
 	/*
 		function allocate memmory

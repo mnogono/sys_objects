@@ -372,7 +372,7 @@ namespace sysFile {
 	}
 #endif
 
-	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file){
+	SYSTEMTIME GetFileLastModifyDateTimeUTC(const wchar_t *file){
 		HANDLE hFile = CreateFileW(
 			file,
 			GENERIC_READ,
@@ -396,8 +396,8 @@ namespace sysFile {
 
 		CloseHandle(hFile);
 
-		return sysTime::SystemTimeToDateTime(&stUTC);
-        //return stUTC;
+		//return sysTime::SystemTimeToDateTime(&stUTC);
+        return stUTC;
 	}
 
 
@@ -428,6 +428,50 @@ namespace sysFile {
 		return true;
 	}
 
+	wchar_t * GetAbsolutePath(const wchar_t *relativePath) {
+		wchar_t *base = GetExecutableFolder();
+		wchar_t *absolute = new wchar_t[MAX_PATH];
+		swprintf(absolute, L"%s\\%s", base, relativePath);
+		delete []base;
+
+		return absolute;
+	}
+
+	wchar_t *GetAbsolutePath(const wchar_t *relativePath, const wchar_t delim) {
+		wchar_t *absolute = GetAbsolutePath(relativePath);
+		if (delim == L'\\') {
+			return sysStr::ReplaceAll(absolute, L'/', delim);
+		}
+		
+		return sysStr::ReplaceAll(absolute, L'\\', delim);
+	}
+
+	char * GetAbsolutePath(const char *relativePath) {
+		char *base = GetExecutableFolderA();
+		char *absolute = new char[MAX_PATH];
+		sprintf(absolute, "%s\\%s", base, relativePath);
+		delete []base;
+
+		return absolute;
+	}
+
+	char * GetAbsolutePath(const char *relativePath, const char delim) {
+		char *absolute = GetAbsolutePath(relativePath);
+		if (delim == '\\') {
+			return sysStr::ReplaceAll(absolute, '/', delim);
+		}
+
+		return sysStr::ReplaceAll(absolute, '\\', delim);
+	}
+	/*
+	std::string GetAbsolutePath(const std::string &relativePath) {
+		char *absolute = GetAbsolutePath(relativePath.c_str());
+		std::string strAbsolute = absolute;
+		delete []absolute;
+		return strAbsolute;
+	}
+	*/
+
     wchar_t * GetExecutableFolder(HMODULE hModule) {
     	wchar_t *buffer = new wchar_t[MAX_PATH];
         memset(buffer, 0, sizeof(wchar_t) * MAX_PATH);
@@ -437,6 +481,16 @@ namespace sysFile {
 
         return buffer;
     }
+
+	char * GetExecutableFolderA() {
+		wchar_t *w = GetExecutableFolder(NULL);
+		char *s;
+		sysStr::WToMB(w, s);
+
+		delete []w;
+
+		return s;
+	}
 
     void GetLastFolderName(wchar_t *path, wchar_t *out) {
 
