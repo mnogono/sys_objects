@@ -1066,9 +1066,15 @@ namespace sysFile {
 		virtual bool ScanIterateCallback(const wchar_t *folder, const WIN32_FIND_DATAW &ffd, void *data = NULL) {
 			if (GetFileAge(ffd) > age) {
 				wchar_t absolutePath[MAX_PATH];
+#ifdef __BORLANDC__
 				if (snwprintf(absolutePath, MAX_PATH, L"%s%s", folder, ffd.cFileName) != -1) {
                     DeleteFile(absolutePath);
 				}
+#else
+				if (swprintf(absolutePath, MAX_PATH, L"%s%s", folder, ffd.cFileName) != -1) {
+                    DeleteFile(absolutePath);
+				}
+#endif
 			}
 			return true;
 		}

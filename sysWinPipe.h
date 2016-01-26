@@ -61,7 +61,7 @@ namespace sysWinPipe {
 	size - size of buffer
 	context - any object NULL by default
 	*/
-	typedef void (*ReadPipeCallback)(char *buffer, DWORD size, void *context = NULL);
+	typedef void (*ReadPipeCallback)(char *buffer, DWORD size, void *context);
 
 	class TPipe {
 		public:

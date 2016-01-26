@@ -4,7 +4,7 @@
 //---------------------------------------------------------------------------
 
 namespace sysFile {
-
+    //need to include for sysFile::GetExeVersionRoow version.lib
 	class TExceptionCantGetFileInfo : public sysException::TException {
 		public:
 			TExceptionCantGetFileInfo(wchar_t *fileName) : sysException::TException(L"") {
