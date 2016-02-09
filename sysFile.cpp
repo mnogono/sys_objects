@@ -11,7 +11,7 @@
 namespace sysFile {
 
 	VS_FIXEDFILEINFO * GetExeVersionRoot(wchar_t *fileName){
-		DWORD infoSize = GetFileVersionInfoSize(fileName, 0);
+		DWORD infoSize = GetFileVersionInfoSizeW(fileName, 0);
 		if (!infoSize) return NULL;
 
 		char * fileInfo = new char[infoSize];
@@ -372,7 +372,8 @@ namespace sysFile {
 	}
 #endif
 
-	SYSTEMTIME GetFileLastModifyDateTimeUTC(const wchar_t *file){
+#ifdef __BORLANDC__
+	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file){
 		HANDLE hFile = CreateFileW(
 			file,
 			GENERIC_READ,
@@ -399,7 +400,7 @@ namespace sysFile {
 		//return sysTime::SystemTimeToDateTime(&stUTC);
         return stUTC;
 	}
-
+#endif
 
 	/*
 	void GetRegValue(HKEY hKey) {
@@ -1072,7 +1073,7 @@ namespace sysFile {
 				}
 #else
 				if (swprintf(absolutePath, MAX_PATH, L"%s%s", folder, ffd.cFileName) != -1) {
-                    DeleteFile(absolutePath);
+					DeleteFile(absolutePath);
 				}
 #endif
 			}
