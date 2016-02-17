@@ -397,8 +397,8 @@ namespace sysFile {
 
 		CloseHandle(hFile);
 
-		//return sysTime::SystemTimeToDateTime(&stUTC);
-        return stUTC;
+		return sysTime::SystemTimeToDateTime(&stUTC);
+        //return stUTC;
 	}
 #endif
 

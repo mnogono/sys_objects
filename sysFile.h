@@ -276,6 +276,10 @@ namespace sysFile {
 
 	//delete all files in folder older then age (ms)
 	void DeleteFilesOlderThen(const wchar_t *folder, const wchar_t *filter, bool recursive, ULONGLONG ageMs);
+
+#ifdef __BORLANDC__
+	TDateTime GetFileLastModifyDateTimeUTC(const wchar_t *file);
+#endif
 }
 
 #endif

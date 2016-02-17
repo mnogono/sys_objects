@@ -320,8 +320,8 @@ struct TXMLOperation : IXMLParse, sysFile::IScanIterator {
 			excludeFolders.push_back(std::wstring(excludes[itExclude].folder.c_str()));
         }
 
-    	for (size_t itInclude = 0; itInclude < includes.size(); ++itInclude) {
-        	sysFile::ScanFiles(includes[itInclude].folder.c_str(), L"*.*", *this, bRecursive, abort, &excludeFolders);
+		for (size_t itInclude = 0; itInclude < includes.size(); ++itInclude) {
+			sysFile::ScanFiles(includes[itInclude].folder.c_str(), L"*.*", *this, bRecursive, &excludeFolders);
         }
     }
 
