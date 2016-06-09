@@ -294,16 +294,20 @@ namespace sysWinPipe {
 		overlapped.hEvent = event;
 		ResetEvent(event);
 		DWORD timeout = 100;
-		DWORD readedBytes;
+		DWORD transferedBytes;
 
 		DWORD err;
 		if (!WriteFile(hPipe, buffer, bufferSize, NULL, &overlapped)) {
 			err = GetLastError();
 			if (err == ERROR_IO_PENDING) {
 				while(1) {
-				if (WaitForSingleObject(event, timeout) == WAIT_OBJECT_0 &&
-					GetOverlappedResult(hPipe, &overlapped, &readedBytes, false)){
-						return true;
+					DWORD wait = WaitForSingleObject(event, timeout);
+					if (wait == WAIT_OBJECT_0) {
+						//TODO need to check transfered bytes and buffer size, if it is not equal, need to repeate WriteFile function with the same buffer with offset
+						BOOL overlappedResult = GetOverlappedResult(hPipe, &overlapped, &transferedBytes, false);
+						if (overlappedResult) {
+							return true;
+						}
 					}
 				}
 			}
@@ -311,6 +315,7 @@ namespace sysWinPipe {
 
 		return false;
 	}
+	
 
 	DWORD WINAPI _startServerThread(void *pipe) {
 		static_cast<TPipe *>(pipe)->mainServerLoop();
